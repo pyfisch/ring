@@ -29,16 +29,6 @@ struct aead_chacha20_poly1305_ctx {
   unsigned char key[32];
 };
 
-int evp_aead_chacha20_poly1305_init(void *ctx_buf, size_t ctx_buf_len,
-                                    const uint8_t *key, size_t key_len) {
-  aead_assert_init_preconditions(alignof(struct aead_chacha20_poly1305_ctx),
-                                 sizeof(struct aead_chacha20_poly1305_ctx),
-                                 ctx_buf, ctx_buf_len, key);
-  struct aead_chacha20_poly1305_ctx *c20_ctx = ctx_buf;
-  memcpy(c20_ctx->key, key, key_len);
-  return 1;
-}
-
 static void poly1305_update_length(poly1305_state *poly1305, size_t data_len) {
   size_t j = data_len;
   uint8_t length_bytes[8];

@@ -100,6 +100,7 @@ pub mod constant_time;
 pub mod der;
 
 pub mod digest;
+mod e_chacha20poly1305;
 mod ecc;
 pub mod hkdf;
 pub mod hmac;

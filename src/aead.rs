@@ -26,6 +26,7 @@
 #![allow(unsafe_code)]
 
 use core;
+use e_chacha20poly1305::evp_aead_chacha20_poly1305_init_rust;
 use super::{c, bssl};
 
 /// A key for authenticating and decrypting (&ldquo;opening&rdquo;)
@@ -368,6 +369,31 @@ type OpenOrSealFn =
                      nonce: *const u8, in_: *const u8, in_len: c::size_t,
                      ad: *const u8, ad_len: c::size_t) -> c::int;
 
+#[allow(unused_variables)]
+unsafe extern fn evp_aead_chacha20_poly1305_init(ctx_buf: *mut u64,
+                                                 ctx_buf_len: c::size_t, key: *const u8,
+                                                 key_len: c::size_t) -> c::int {
+    assert!(!ctx_buf.is_null());
+    assert!(!key.is_null());
+    let x = core::slice::from_raw_parts_mut(ctx_buf, ctx_buf_len);
+    let y = core::slice::from_raw_parts(key, key_len);
+    match evp_aead_chacha20_poly1305_init_rust(x, y) {
+        Ok(()) => 1,
+        Err(()) => 0,
+    }
+}
+
+#[allow(unused_variables,dead_code)]
+unsafe extern fn evp_aead_chacha20_poly1305_seal_tmp(ctx_buf: *const u64, out: *mut u8,
+                                                 out_len: &mut c::size_t,
+                                                 max_out_len: c::size_t,
+                                                 nonce: *const u8, in_: *const u8,
+                                                 in_len: c::size_t, ad: *const u8,
+                                                 ad_len: c::size_t) -> c::int {
+    1
+}
+
+
 extern {
     fn evp_aead_aes_gcm_init(ctx_buf: *mut u64, ctx_buf_len: c::size_t,
                              key: *const u8, key_len: c::size_t) -> c::int;
@@ -384,17 +410,6 @@ extern {
                              in_len: c::size_t, ad: *const u8,
                              ad_len: c::size_t) -> c::int;
 
-    fn evp_aead_chacha20_poly1305_init(ctx_buf: *mut u64,
-                                       ctx_buf_len: c::size_t, key: *const u8,
-                                       key_len: c::size_t) -> c::int;
-
-    fn evp_aead_chacha20_poly1305_seal(ctx_buf: *const u64, out: *mut u8,
-                                       out_len: &mut c::size_t,
-                                       max_out_len: c::size_t,
-                                       nonce: *const u8, in_: *const u8,
-                                       in_len: c::size_t, ad: *const u8,
-                                       ad_len: c::size_t) -> c::int;
-
     fn evp_aead_chacha20_poly1305_open(ctx_buf: *const u64, out: *mut u8,
                                        out_len: &mut c::size_t,
                                        max_out_len: c::size_t,
@@ -408,6 +423,13 @@ extern {
                                            nonce: *const u8, in_: *const u8,
                                            in_len: c::size_t, ad: *const u8,
                                            ad_len: c::size_t) -> c::int;
+
+fn evp_aead_chacha20_poly1305_seal(ctx_buf: *const u64, out: *mut u8,
+                                                 out_len: &mut c::size_t,
+                                                 max_out_len: c::size_t,
+                                                 nonce: *const u8, in_: *const u8,
+                                                 in_len: c::size_t, ad: *const u8,
+                                                 ad_len: c::size_t) -> c::int;
 
     fn evp_aead_chacha20_poly1305_old_open(ctx_buf: *const u64, out: *mut u8,
                                            out_len: &mut c::size_t,
