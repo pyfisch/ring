@@ -117,10 +117,12 @@ fn seal_impl(ctx_buf: *const u64, out: *mut u8, out_len: *mut usize, max_out_len
         CRYPTO_chacha_20(out, in_.as_ptr(), in_.len(), c20_ctx.as_ptr(), nonce, 1);
     }
 
-    let mut tag = [0; POLY1305_TAG_LEN];
+    let tag = unsafe {
+        from_raw_parts_mut(out.offset(in_.len() as isize), POLY1305_TAG_LEN)
+    };
 
     let ciphertext = unsafe { from_raw_parts_mut(out, in_.len()) };
-    aead_poly1305(&mut tag, c20_ctx, nonce, ad, ciphertext);
+    aead_poly1305(tag, c20_ctx, nonce, ad, ciphertext);
 
     Ok(())
 }
